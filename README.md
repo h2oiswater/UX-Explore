@@ -4,16 +4,16 @@
 
 - APP
   
-  Built APP by Flutter.
+  Base on Flutter.
 
 - Backend Logic
   
-  [DialogFlow]([https://dialogflow.com/](https://dialogflow.com/))
+  Base on [DialogFlow](https://dialogflow.com/).
 
 ### Goal
 
-![zz](doc/ss/goal.gif)
+![goal](doc/ss/goal.gif)
 
 ### Detail
 
-I will write some key step after project done.
+I will writting some key step after project done.
