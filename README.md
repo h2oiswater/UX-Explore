@@ -12,7 +12,7 @@
 
 ### Goal
 
-![](./doc/ss/2019-09-03 01.45.46.gif)
+![zz](doc/ss/goal.gif)
 
 ### Detail
 
