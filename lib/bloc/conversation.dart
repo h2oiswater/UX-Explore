@@ -1,18 +1,146 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ConversationBloc with ChangeNotifier {
-  final FlutterSound _recorder = new FlutterSound();
+  final FlutterSound _flutterSound = new FlutterSound();
+  StreamSubscription _recorderSubscription;
+  StreamSubscription _playerSubscription;
+  String _currentRecordingFilePath;
+
+  bool get isRecording => _flutterSound.isRecording;
+  String currentText = 'Hello';
 
   void startRecord() async {
-    Future<String> result = await _recorder.startRecorder(null);
+    print("startRecord");
 
-    result.then(path) {
-      print('startRecorder: $path');
+    PermissionStatus permission = await PermissionHandler()
+        .checkPermissionStatus(PermissionGroup.microphone);
 
-      _recorderSubscription = flutterSound.onRecorderStateChanged.listen((e) {
-        DateTime date = new DateTime.fromMillisecondsSinceEpoch(e.currentPosition.toInt());
-        String txt = DateFormat('mm:ss:SS', 'en_US').format(date);
-      });
+    if (_flutterSound.isRecording) return;
+
+    if (permission != PermissionStatus.granted) {
+      print('Permission not granted');
+      currentText = '麦克风权限未授予，无法进行录音';
+      notifyListeners();
+      return;
+    }
+
+    try {
+      _currentRecordingFilePath = await _flutterSound.startRecorder(null);
+    } catch (e) {
+      print('--- stopRecord error ---');
+      print(e.toString());
+      print('--- stopRecord end ---');
+      return;
+    }
+
+    print('startRecorder: $_currentRecordingFilePath');
+
+    _recorderSubscription = _flutterSound.onRecorderStateChanged.listen((e) {
+      DateTime date =
+          new DateTime.fromMillisecondsSinceEpoch(e.currentPosition.toInt());
+      String txt = '${date.minute}:${date.second}:${date.millisecond}';
+      print(txt);
+    });
+    currentText = '正在记录';
+    notifyListeners();
+  }
+
+  void stopRecord() async {
+    print("stopRecord");
+
+    if (!_flutterSound.isRecording) {
+      _recordCompleted();
+      return;
+    }
+
+    String value;
+    try {
+      value = await _flutterSound.stopRecorder();
+    } catch (e) {
+      print('--- stopRecord error ---');
+      print(e.toString());
+      print('--- stopRecord end ---');
+    }
+
+    print('stopRecorder: $value');
+
+    if (_recorderSubscription != null) {
+      _recorderSubscription.cancel();
+      _recorderSubscription = null;
+    }
+    currentText = 'Hello';
+    notifyListeners();
+  }
+
+  void startPlayer() async {
+    print("startPlayer");
+
+    if (_flutterSound.isPlaying) return;
+
+    _currentRecordingFilePath = await _flutterSound.startPlayer(null);
+
+    print('startPlayer: $_currentRecordingFilePath');
+
+    _playerSubscription = _flutterSound.onPlayerStateChanged.listen((e) {
+      if (e != null) {
+        DateTime date =
+            new DateTime.fromMillisecondsSinceEpoch(e.currentPosition.toInt());
+        String txt = '${date.minute}:${date.second}:${date.millisecond}';
+        print(txt);
+
+        if (e.currentPosition == e.duration) {
+          _playSoundCompleted();
+        }
+      }
+    });
+    currentText = '正在播放';
+    notifyListeners();
+  }
+
+  void stopPlayer() async {
+    print("stopPlayer");
+
+    if (!_flutterSound.isPlaying) {
+      _playSoundCompleted();
+      return;
+    }
+
+    String value;
+    try {
+      value = await _flutterSound.stopPlayer();
+    } catch (e) {
+      print('--- stopPlayer error ---');
+      print(e.toString());
+      print('--- stopPlayer end ---');
+    }
+
+    print('stopRecorder: $value');
+
+    if (_playerSubscription != null) {
+      _playerSubscription.cancel();
+      _playerSubscription = null;
+    }
+    _recordCompleted();
+  }
+
+  @override
+  void dispose() {
+    _flutterSound.stopPlayer();
+    _flutterSound.stopRecorder();
+    super.dispose();
+  }
+
+  void _playSoundCompleted() {
+    currentText = 'Hello';
+    notifyListeners();
+  }
+
+  void _recordCompleted() {
+    currentText = 'Hello';
+    notifyListeners();
   }
 }

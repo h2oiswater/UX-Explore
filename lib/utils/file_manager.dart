@@ -11,6 +11,6 @@ class FileManager {
     if (!isVoiceDirExist) {
       await voiceDir.create();
     }
-    return "${voiceDir.path}/${DateTime.now().millisecondsSinceEpoch.toString()}";
+    return "${voiceDir.path}${DateTime.now().millisecondsSinceEpoch.toString()}.m4a";
   }
 }

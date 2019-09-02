@@ -44,11 +44,9 @@ packages:
   flutter_sound:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: ff394462292de428659b7d3e3775f39b4565fdd7
-      url: "https://github.com/bsutton/flutter_sound"
-    source: git
+      name: flutter_sound
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "1.4.2"
   flutter_test:
     dependency: "direct dev"
@@ -90,6 +88,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.7.0"
+  permission_handler:
+    dependency: "direct main"
+    description:
+      name: permission_handler
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.2.2"
   provider:
     dependency: "direct main"
     description:

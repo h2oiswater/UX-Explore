@@ -22,10 +22,11 @@ dependencies:
   # State Management
   provider: ^3.1.0
   # Audio Record
-  flutter_sound:
-    git: https://github.com/bsutton/flutter_sound
+  flutter_sound: ^1.4.2
   # Path Provider
   path_provider: ^1.2.0
+  # Permission Check
+  permission_handler: ^3.2.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
