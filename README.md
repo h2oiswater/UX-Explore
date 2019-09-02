@@ -1,4 +1,4 @@
-# A expriment for voice control.
+# An expriment for voice control.
 
 ## Plan
 
