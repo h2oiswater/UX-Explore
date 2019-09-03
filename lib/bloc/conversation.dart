@@ -21,29 +21,30 @@ class ConversationBloc with ChangeNotifier {
 
     if (_flutterSound.isRecording) return;
 
-    if (permission != PermissionStatus.granted) {
-      print('Permission not granted');
-      currentText = '麦克风权限未授予，无法进行录音';
-      notifyListeners();
-      return;
-    }
-
     try {
       _currentRecordingFilePath = await _flutterSound.startRecorder(null);
     } catch (e) {
-      print('--- stopRecord error ---');
+      print('--- startRecord error ---');
       print(e.toString());
-      print('--- stopRecord end ---');
+      print('--- startRecord end ---');
+      return;
+    }
+
+    if (permission != PermissionStatus.granted) {
+      print('Permission not granted');
+      stopRecord();
       return;
     }
 
     print('startRecorder: $_currentRecordingFilePath');
 
     _recorderSubscription = _flutterSound.onRecorderStateChanged.listen((e) {
-      DateTime date =
-          new DateTime.fromMillisecondsSinceEpoch(e.currentPosition.toInt());
-      String txt = '${date.minute}:${date.second}:${date.millisecond}';
-      print(txt);
+      if (e != null) {
+        DateTime date =
+            new DateTime.fromMillisecondsSinceEpoch(e.currentPosition.toInt());
+        String txt = '${date.minute}:${date.second}:${date.millisecond}';
+        print(txt);
+      }
     });
     currentText = '正在记录';
     notifyListeners();
