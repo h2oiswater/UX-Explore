@@ -36,7 +36,7 @@ class VoiceInputWidgetState extends State<VoiceInputWidget> {
                     borderRadius: BorderRadius.all(Radius.circular(24))),
                 child: InkWell(
                   onTapDown: (_) => value.startRecord(),
-                  onTapCancel: () => print('onTapCancel'),
+                  onTapCancel: () => value.stopRecord(),
                   onTap: () => value.stopRecord(),
                   child: Center(
                     child: Icon(

@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:starter/bloc/interfaces/conversation.dart';
+import 'package:starter/core/bussiness/conversation.dart';
+import 'package:starter/utils/file_manager.dart';
 
-class ConversationBloc with ChangeNotifier {
+class ConversationBloc with ChangeNotifier implements IConversationBloc {
   final FlutterSound _flutterSound = new FlutterSound();
   StreamSubscription _recorderSubscription;
   StreamSubscription _playerSubscription;
@@ -13,6 +17,24 @@ class ConversationBloc with ChangeNotifier {
   bool get isRecording => _flutterSound.isRecording;
   String currentText = 'Hello';
 
+  @override
+  void dispose() {
+    _flutterSound.stopPlayer();
+    _flutterSound.stopRecorder();
+    super.dispose();
+  }
+
+  void _playSoundCompleted() {
+    currentText = 'Hello';
+    notifyListeners();
+  }
+
+  void _recordCompleted() {
+    currentText = 'Hello';
+    notifyListeners();
+  }
+
+  @override
   void startRecord() async {
     print("startRecord");
 
@@ -43,13 +65,13 @@ class ConversationBloc with ChangeNotifier {
         DateTime date =
             new DateTime.fromMillisecondsSinceEpoch(e.currentPosition.toInt());
         String txt = '${date.minute}:${date.second}:${date.millisecond}';
-        print(txt);
       }
     });
     currentText = '正在记录';
     notifyListeners();
   }
 
+  @override
   void stopRecord() async {
     print("stopRecord");
 
@@ -75,8 +97,11 @@ class ConversationBloc with ChangeNotifier {
     }
     currentText = 'Hello';
     notifyListeners();
+
+    getLatestText();
   }
 
+  @override
   void startPlayer() async {
     print("startPlayer");
 
@@ -88,11 +113,6 @@ class ConversationBloc with ChangeNotifier {
 
     _playerSubscription = _flutterSound.onPlayerStateChanged.listen((e) {
       if (e != null) {
-        DateTime date =
-            new DateTime.fromMillisecondsSinceEpoch(e.currentPosition.toInt());
-        String txt = '${date.minute}:${date.second}:${date.millisecond}';
-        print(txt);
-
         if (e.currentPosition == e.duration) {
           _playSoundCompleted();
         }
@@ -102,6 +122,7 @@ class ConversationBloc with ChangeNotifier {
     notifyListeners();
   }
 
+  @override
   void stopPlayer() async {
     print("stopPlayer");
 
@@ -129,19 +150,11 @@ class ConversationBloc with ChangeNotifier {
   }
 
   @override
-  void dispose() {
-    _flutterSound.stopPlayer();
-    _flutterSound.stopRecorder();
-    super.dispose();
-  }
-
-  void _playSoundCompleted() {
-    currentText = 'Hello';
-    notifyListeners();
-  }
-
-  void _recordCompleted() {
-    currentText = 'Hello';
-    notifyListeners();
+  void getLatestText() async {
+    final file = File.fromUri(Uri.parse(_currentRecordingFilePath));
+    print('getLatestText');
+    final rep = await ConversationRepository.convertAudio2Text(
+        file.path);
+    print(rep);
   }
 }
