@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'package:starter/bloc/auth.dart';
 import 'package:starter/bloc/conversation.dart';
-import 'package:starter/ui/pages/main/main.dart';
+import 'package:starter/ui/pages/main/main_page.dart';
 
 void main() => runApp(new MyApp());
 

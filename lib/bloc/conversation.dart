@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:starter/bloc/interfaces/conversation.dart';
 import 'package:starter/core/bussiness/conversation.dart';
 import 'package:starter/utils/file_manager.dart';
+import 'package:starter/model/msg.dart';
 
 class ConversationBloc with ChangeNotifier implements IConversationBloc {
   final FlutterSound _flutterSound = new FlutterSound();
@@ -16,6 +17,13 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
 
   bool get isRecording => _flutterSound.isRecording;
   String currentText = 'Hello';
+
+  List<Msg> conversationList = [
+    Msg(
+        content: '你好:)',
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        direction: MsgDirection.IN)
+  ];
 
   @override
   void dispose() {
@@ -151,10 +159,26 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
 
   @override
   void getLatestText() async {
-    final file = File.fromUri(Uri.parse(_currentRecordingFilePath));
-    print('getLatestText');
-    final rep = await ConversationRepository.convertAudio2Text(
-        file.path);
-    print(rep);
+//    final file = File.fromUri(Uri.parse(_currentRecordingFilePath));
+//    print('getLatestText');
+//    final rep = await ConversationRepository.convertAudio2Text(
+//        file.path);
+//    print(rep);
+    _addMsg(Msg(
+        content: '你好',
+        direction: MsgDirection.OUT,
+        id: DateTime.now().millisecondsSinceEpoch.toString()));
+
+    Future.delayed(
+        Duration(seconds: 3),
+        () => _addMsg(Msg(
+            content: '我很好',
+            direction: MsgDirection.IN,
+            id: DateTime.now().millisecondsSinceEpoch.toString())));
+  }
+
+  void _addMsg(Msg msg) {
+    conversationList.add(msg);
+    notifyListeners();
   }
 }
