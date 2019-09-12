@@ -1,8 +1,15 @@
 import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:path/path.dart';
+import 'package:starter/core/api/base/option.dart';
 import 'package:starter/core/api/config.dart';
 
-class HttpClient {
+abstract class IHttpClient {
+  Future<dynamic> request(RequestOption option);
+}
+
+class HttpClient extends IHttpClient {
   // 单例公开访问点
   factory HttpClient() => _sharedInstance();
 
@@ -30,6 +37,7 @@ class HttpClient {
     );
 
     dio = Dio(options);
+    dio.interceptors.add(LogInterceptor(responseBody: true));
 
     //Cookie管理
 //    dio.interceptors.add(CookieManager(CookieJar()));
@@ -63,13 +71,35 @@ class HttpClient {
   BaseOptions options;
   CancelToken cancelToken = CancelToken();
 
-  Future<dynamic> upload(String url, File file) async {
-    FormData formData = new FormData.from({
-      "files": new UploadFileInfo(file, 'audio.m4a'),
+  Future<Response<Map<String, dynamic>>> upload(
+      String url, List<File> files) async {
+    Map<String, dynamic> maps = {};
+    files.forEach((f) {
+      maps[basename(f.path)] = UploadFileInfo(f, basename(f.path));
     });
+    FormData formData = new FormData.from(maps);
 
-    print(BASE_URL + url);
-    dynamic response = await dio.post(BASE_URL + url, data: formData);
+    Response<Map<String, dynamic>> response =
+        await dio.post(url, data: formData);
     return response;
+  }
+
+  Future<Response<Map<String, dynamic>>> get(
+      String url, Map<String, dynamic> params) async {
+    Response<Map<String, dynamic>> response =
+        await dio.get(url, queryParameters: params);
+    return response;
+  }
+
+  @override
+  Future request(RequestOption option) {
+    if (option.method == HttpMethod.GET) {
+      return get(option.url, option.queryParams);
+    } else if (option.method == HttpMethod.POST) {
+      if (option.fileParams.isNotEmpty) {
+        return upload(option.url, option.fileParams);
+      }
+    }
+    return null;
   }
 }

@@ -6,3 +6,6 @@ abstract class IConversationBloc {
 
   void getLatestText();
 }
+
+abstract class IConversationView {
+}

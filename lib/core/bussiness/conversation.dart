@@ -1,9 +1,27 @@
+import 'dart:collection';
 import 'dart:io';
 
-import 'package:starter/core/api/http_client.dart';
+import 'package:dio/dio.dart';
+import 'package:starter/core/api/base/option.dart';
+import 'package:starter/core/api/df_api.dart';
 
 class ConversationRepository {
-  static Future<dynamic> convertAudio2Text(String filePath) {
-    return HttpClient().upload('/converter/m4a', File(filePath));
+  static Future<Response<Map<String, dynamic>>> convertAudio2Text(
+      String filePath) {
+    return DFAPI.request(RequestOption(
+        url: '/converter/m4a',
+        method: HttpMethod.POST,
+        fileParams: [File(filePath)]));
+  }
+
+  static Future<Response<Map<String, dynamic>>> intentDetect(String text,
+      {String sessionPath}) {
+    Map<String, dynamic> params = HashMap();
+    params['text'] = text;
+    if (sessionPath != null) {
+      params['sessionPath'] = sessionPath;
+    }
+    return DFAPI.request(RequestOption(
+        url: '/df/', method: HttpMethod.GET, queryParams: params));
   }
 }

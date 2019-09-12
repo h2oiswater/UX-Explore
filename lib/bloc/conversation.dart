@@ -5,25 +5,43 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:starter/bloc/interfaces/conversation.dart';
+import 'package:starter/bloc/interfaces/trip.dart';
 import 'package:starter/core/bussiness/conversation.dart';
-import 'package:starter/utils/file_manager.dart';
 import 'package:starter/model/msg.dart';
 
 class ConversationBloc with ChangeNotifier implements IConversationBloc {
+  ITripBloc tripBloc;
+  // Recorder and Player
   final FlutterSound _flutterSound = new FlutterSound();
+
+  // Recorder status listener
   StreamSubscription _recorderSubscription;
+
+  // Player status listener
   StreamSubscription _playerSubscription;
+
+  // Latest record file store path.
   String _currentRecordingFilePath;
 
+  // Dialog SessionPath
+  String _sessionPath;
+
   bool get isRecording => _flutterSound.isRecording;
-  String currentText = 'Hello';
+
+  String currentText = '';
 
   List<Msg> conversationList = [
     Msg(
-        content: '你好:)',
+        content: '你好:)\n我是您的购票小助手，您可以对我说："我想买一张明天下午三点从昆明出发去大理的票。"\n即可完成购票。',
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        direction: MsgDirection.IN)
+        direction: MsgDirection.IN),
+    Msg(
+        content: '👋',
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        direction: MsgDirection.OUT),
   ];
+
+  ConversationBloc({this.tripBloc});
 
   @override
   void dispose() {
@@ -33,12 +51,12 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
   }
 
   void _playSoundCompleted() {
-    currentText = 'Hello';
+    currentText = '';
     notifyListeners();
   }
 
   void _recordCompleted() {
-    currentText = 'Hello';
+    currentText = '';
     notifyListeners();
   }
 
@@ -159,22 +177,35 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
 
   @override
   void getLatestText() async {
-//    final file = File.fromUri(Uri.parse(_currentRecordingFilePath));
-//    print('getLatestText');
-//    final rep = await ConversationRepository.convertAudio2Text(
-//        file.path);
-//    print(rep);
+    final file = File.fromUri(Uri.parse(_currentRecordingFilePath));
+    print('getLatestText');
+    final rep = await ConversationRepository.convertAudio2Text(file.path);
     _addMsg(Msg(
-        content: '你好',
+        content: rep.data['data'],
         direction: MsgDirection.OUT,
         id: DateTime.now().millisecondsSinceEpoch.toString()));
 
-    Future.delayed(
-        Duration(seconds: 3),
-        () => _addMsg(Msg(
-            content: '我很好',
-            direction: MsgDirection.IN,
-            id: DateTime.now().millisecondsSinceEpoch.toString())));
+//    Future.delayed(
+//        Duration(seconds: 3),
+//        () => _addMsg(Msg(
+//            content: '我很好',
+//            direction: MsgDirection.IN,
+//            id: DateTime.now().millisecondsSinceEpoch.toString())));
+
+    _intentDetect(rep.data['data']);
+  }
+
+  void _intentDetect(String text) async {
+    final rep = await ConversationRepository.intentDetect(text,
+        sessionPath: _sessionPath);
+
+    print(rep.toString());
+
+    _sessionPath = rep.data['sessionPath'];
+    _addMsg(Msg(
+        content: rep.data['fulfillmentText'],
+        direction: MsgDirection.IN,
+        id: DateTime.now().millisecondsSinceEpoch.toString()));
   }
 
   void _addMsg(Msg msg) {
