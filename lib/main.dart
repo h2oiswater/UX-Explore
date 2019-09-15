@@ -18,8 +18,8 @@ class MyApp extends StatelessWidget {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: TripBloc()),
         ChangeNotifierProvider.value(value: ConversationBloc()),
+        ChangeNotifierProvider.value(value: TripBloc()),
         ChangeNotifierProvider.value(value: AuthBloc())
       ],
       child: MaterialApp(

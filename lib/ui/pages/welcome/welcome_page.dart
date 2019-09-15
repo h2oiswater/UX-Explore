@@ -9,8 +9,6 @@ class WelcomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AuthBloc>(
       builder: (_, bloc, __) {
-        print('isAuthenticated');
-        print(bloc.isAuthenticated);
         if (bloc.isAuthenticated) {
           return MainPage();
         } else {

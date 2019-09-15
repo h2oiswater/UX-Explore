@@ -14,7 +14,7 @@ class AuthBloc with ChangeNotifier {
 
   AuthBloc() {
     Storage().get(Storage.KEY_TOKEN).then((token) {
-      this.isAuthenticated = token.isNotEmpty;
+      this.isAuthenticated = token != null ? token.isNotEmpty : false;
       notifyListeners();
     });
   }

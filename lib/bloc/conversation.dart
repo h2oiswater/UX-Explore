@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:starter/bloc/interfaces/conversation.dart';
-import 'package:starter/bloc/interfaces/trip.dart';
 import 'package:starter/core/bussiness/conversation.dart';
 import 'package:starter/model/msg.dart';
 
 class ConversationBloc with ChangeNotifier implements IConversationBloc {
-  ITripBloc tripBloc;
+  static const String NAME = "ConversationBloc";
+
   // Recorder and Player
   final FlutterSound _flutterSound = new FlutterSound();
 
@@ -40,8 +40,6 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         direction: MsgDirection.OUT),
   ];
-
-  ConversationBloc({this.tripBloc});
 
   @override
   void dispose() {
@@ -212,4 +210,7 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
     conversationList.add(msg);
     notifyListeners();
   }
+
+  @override
+  void onInit(BuildContext context) {}
 }
