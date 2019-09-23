@@ -6,7 +6,7 @@ import 'package:starter/core/api/base/option.dart';
 import 'package:starter/core/api/config.dart';
 
 abstract class IHttpClient {
-  Future<dynamic> request(RequestOption option);
+  Future<Response<dynamic>> request(RequestOption option);
 }
 
 class HttpClient extends IHttpClient {
@@ -25,7 +25,7 @@ class HttpClient extends IHttpClient {
       //连接服务器超时时间，单位是毫秒.
       connectTimeout: 10000,
       //响应流上前后两次接受到数据的间隔，单位为毫秒。
-      receiveTimeout: 5000,
+      receiveTimeout: 10000,
       //Http请求头.
       headers: {
         //do something
@@ -92,7 +92,7 @@ class HttpClient extends IHttpClient {
   }
 
   @override
-  Future request(RequestOption option) {
+  Future<Response<dynamic>> request(RequestOption option) {
     if (option.method == HttpMethod.GET) {
       return get(option.url, option.queryParams);
     } else if (option.method == HttpMethod.POST) {

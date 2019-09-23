@@ -5,11 +5,24 @@ enum HttpMethod { GET, POST, PUT, PATCH, DELETE }
 class RequestOption {
   String url;
   final HttpMethod method;
-  final Map<String, String> headers;
-  final Map<String, String> queryParams;
-  final Map<String, String> bodyParams;
-  final List<File> fileParams;
+  Map<String, String> headers;
+  Map<String, dynamic> queryParams;
+  Map<String, String> bodyParams;
+  List<File> fileParams;
 
   RequestOption(
-      {this.url, this.method, this.headers, this.queryParams, this.bodyParams, this.fileParams});
+      {this.url, this.method, this.headers, this.queryParams, this.bodyParams, this.fileParams}){
+    if (headers == null) {
+      headers = {};
+    }
+    if (queryParams == null) {
+      queryParams = {};
+    }
+    if (bodyParams == null) {
+      bodyParams = {};
+    }
+    if (fileParams == null) {
+      fileParams = [];
+    }
+  }
 }

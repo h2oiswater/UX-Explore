@@ -6,7 +6,7 @@ class AuthRepository {
   static Future<Response<Map<String, dynamic>>> login(
       String phone, String password) {
     return TripAPI.request(RequestOption(
-        url: '/common/staff/token',
+        url: '/common/user/token',
         method: HttpMethod.GET,
         queryParams: {
           "password": password,

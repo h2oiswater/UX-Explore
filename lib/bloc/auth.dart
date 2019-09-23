@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:starter/bloc/api.dart';
 import 'package:starter/core/bussiness/auth.dart';
 import 'package:starter/core/storage.dart';
 import 'package:starter/model/api_error.dart';
@@ -12,9 +13,13 @@ class AuthBloc with ChangeNotifier {
 
   bool isAuthenticated = false;
 
+  APIProvider api;
+
   AuthBloc() {
     Storage().get(Storage.KEY_TOKEN).then((token) {
+      print("app token = $token");
       this.isAuthenticated = token != null ? token.isNotEmpty : false;
+      print("app this.isAuthenticated = ${this.isAuthenticated}");
       notifyListeners();
     });
   }

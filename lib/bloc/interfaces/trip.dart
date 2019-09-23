@@ -6,7 +6,3 @@ abstract class ITripBloc {
   void addCount();
 }
 
-abstract class ITripView {
-  void showPassengersSelector(
-      BuildContext context, List<Passenger> passengers);
-}

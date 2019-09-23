@@ -1,5 +1,6 @@
 class APIError extends Error {
   String message;
+  int code;
 
-  APIError({this.message});
+  APIError({this.message, this.code});
 }

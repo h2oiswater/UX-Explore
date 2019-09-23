@@ -4,8 +4,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:starter/bloc/api.dart';
 import 'package:starter/bloc/interfaces/conversation.dart';
+import 'package:starter/bloc/interfaces/provider_builder.dart';
+import 'package:starter/bloc/user_info.dart';
 import 'package:starter/core/bussiness/conversation.dart';
+import 'package:starter/model/df/detect_intent_response/detect_intent.dart';
 import 'package:starter/model/msg.dart';
 
 class ConversationBloc with ChangeNotifier implements IConversationBloc {
@@ -29,6 +33,10 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
   bool get isRecording => _flutterSound.isRecording;
 
   String currentText = '';
+
+  UserInfoBloc userInfoBloc;
+
+  APIProvider apiProvider;
 
   List<Msg> conversationList = [
     Msg(
@@ -177,7 +185,8 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
   void getLatestText() async {
     final file = File.fromUri(Uri.parse(_currentRecordingFilePath));
     print('getLatestText');
-    final rep = await ConversationRepository.convertAudio2Text(file.path);
+    final rep = await apiProvider.dfAPI.conversationRepository
+        .convertAudio2Text(file.path);
     _addMsg(Msg(
         content: rep.data['data'],
         direction: MsgDirection.OUT,
@@ -194,16 +203,25 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
   }
 
   void _intentDetect(String text) async {
-    final rep = await ConversationRepository.intentDetect(text,
-        sessionPath: _sessionPath);
+    final rep = await apiProvider.dfAPI.conversationRepository
+        .intentDetect(text, sessionPath: _sessionPath);
 
     print(rep.toString());
 
     _sessionPath = rep.data['sessionPath'];
-    _addMsg(Msg(
-        content: rep.data['fulfillmentText'],
-        direction: MsgDirection.IN,
-        id: DateTime.now().millisecondsSinceEpoch.toString()));
+
+    DetectIntent detectIntent =
+        DetectIntent.fromJsonMap(rep.data['fullResponse']);
+
+    if (detectIntent.allRequiredParamsPresent) {
+      // 搜集了所有的信息了
+      _showPassengerSelector(detectIntent.parameters.fields.count.numberValue);
+    } else {
+      _addMsg(Msg(
+          content: rep.data['fulfillmentText'],
+          direction: MsgDirection.IN,
+          id: DateTime.now().millisecondsSinceEpoch.toString()));
+    }
   }
 
   void _addMsg(Msg msg) {
@@ -211,6 +229,7 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
     notifyListeners();
   }
 
-  @override
-  void onInit(BuildContext context) {}
+  void _showPassengerSelector(count) {
+    userInfoBloc.showPassengerSelector(count);
+  }
 }

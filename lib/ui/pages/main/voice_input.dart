@@ -2,10 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:starter/bloc/conversation.dart';
 
-class VoiceInputWidget extends StatelessWidget {
+class VoiceInputWidget extends StatefulWidget {
+
+  @override
+  State<StatefulWidget> createState() {
+    return VoiceInputWidgetState();
+  }
+
+}
+
+class VoiceInputWidgetState extends State {
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ConversationBloc>(builder: (context, value, _) {
+
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
