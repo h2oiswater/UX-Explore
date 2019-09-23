@@ -15,6 +15,8 @@ class AuthBloc with ChangeNotifier {
 
   APIProvider api;
 
+  final formKey = GlobalKey<FormState>();
+
   AuthBloc() {
     Storage().get(Storage.KEY_TOKEN).then((token) {
       print("app token = $token");
@@ -42,19 +44,11 @@ class AuthBloc with ChangeNotifier {
 
   Future<String> login() async {
     Response<Map<String, dynamic>> rep;
-    try {
-      rep = await AuthRepository.login(_phone, _password);
-    } catch (_) {
-      return 'error';
-    }
-
-    if (rep.data["code"] == -1) {
-      throw APIError(message: rep.data["msg"]);
-    }
+    rep = await AuthRepository.login(_phone, _password);
 
     String token = rep.data["data"]["token"];
     Storage().set(Storage.KEY_TOKEN, token);
-    return token;
+    return null;
   }
 
   void zzz() => _needLogin = false;

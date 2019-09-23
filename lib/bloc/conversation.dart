@@ -6,9 +6,7 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:starter/bloc/api.dart';
 import 'package:starter/bloc/interfaces/conversation.dart';
-import 'package:starter/bloc/interfaces/provider_builder.dart';
 import 'package:starter/bloc/user_info.dart';
-import 'package:starter/core/bussiness/conversation.dart';
 import 'package:starter/model/df/detect_intent_response/detect_intent.dart';
 import 'package:starter/model/msg.dart';
 
@@ -30,13 +28,13 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
   // Dialog SessionPath
   String _sessionPath;
 
+  APIProvider api;
+
   bool get isRecording => _flutterSound.isRecording;
 
   String currentText = '';
 
   UserInfoBloc userInfoBloc;
-
-  APIProvider apiProvider;
 
   List<Msg> conversationList = [
     Msg(
@@ -185,7 +183,7 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
   void getLatestText() async {
     final file = File.fromUri(Uri.parse(_currentRecordingFilePath));
     print('getLatestText');
-    final rep = await apiProvider.dfAPI.conversationRepository
+    final rep = await api.dfAPI.conversationRepository
         .convertAudio2Text(file.path);
     _addMsg(Msg(
         content: rep.data['data'],
@@ -203,7 +201,7 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
   }
 
   void _intentDetect(String text) async {
-    final rep = await apiProvider.dfAPI.conversationRepository
+    final rep = await api.dfAPI.conversationRepository
         .intentDetect(text, sessionPath: _sessionPath);
 
     print(rep.toString());

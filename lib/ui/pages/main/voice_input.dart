@@ -2,16 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:starter/bloc/conversation.dart';
 
-class VoiceInputWidget extends StatefulWidget {
-
-  @override
-  State<StatefulWidget> createState() {
-    return VoiceInputWidgetState();
-  }
-
-}
-
-class VoiceInputWidgetState extends State {
+class VoiceInputWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {

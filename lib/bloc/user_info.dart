@@ -1,11 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:starter/core/bussiness/user_info.dart';
 import 'package:starter/model/passenger.dart';
 import 'package:starter/ui/widgets/passenger_selector_widget.dart';
-
-import 'app.dart';
 
 class UserInfoBloc with ChangeNotifier {
   final BuildContext context;
@@ -18,10 +15,14 @@ class UserInfoBloc with ChangeNotifier {
 //    });
   }
 
-  Future<List<Passenger>> showPassengerSelector(int count) {
+  Future<List<Passenger>> showPassengerSelector(int count) async {
     print('showPassengerSelector');
+    var rep = await UserInfoRepository.getPassengers();
+    List list = rep.data["data"];
+    passengers = list.map((f) => Passenger.fromJsonMap(f)).toList();
+
     return showModalBottomSheet<List<Passenger>>(
-        context: APP.getContext(),
+        context: context,
         builder: (BuildContext context) {
           return Scaffold(
             body: PassengerSelectorWidget(
