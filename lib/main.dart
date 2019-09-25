@@ -17,20 +17,7 @@ class MyApp extends StatelessWidget {
     Provider.debugCheckInvalidValueType = null;
 
     return MultiProvider(
-      providers: [
-        Provider(builder: (context) => APIProvider()),
-        Provider(builder: (context) => UserInfoBloc(context: context)),
-        ProxyProvider<APIProvider, AuthBloc>(
-          builder: (context, api, previous) =>
-              (previous ?? AuthBloc())..api = api,
-        ),
-        ProxyProvider2<APIProvider, UserInfoBloc, ConversationBloc>(
-          builder: (context, api, userInfoBloc, previous) =>
-              (previous ?? ConversationBloc())
-                ..api = api
-                ..userInfoBloc = userInfoBloc,
-        )
-      ],
+      providers: [Provider.value(value: APIProvider())],
       child: MaterialApp(
         title: 'ReeMii',
         initialRoute: WELCOME_PAGE,

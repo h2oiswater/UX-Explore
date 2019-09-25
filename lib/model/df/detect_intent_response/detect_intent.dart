@@ -9,7 +9,7 @@ class DetectIntent {
   List<FulfillmentMessages> fulfillmentMessages;
   List<Object> outputContexts;
   String queryText;
-  int speechRecognitionConfidence;
+	dynamic speechRecognitionConfidence;
   String action;
   Parameters parameters;
   bool allRequiredParamsPresent;
@@ -17,7 +17,7 @@ class DetectIntent {
   String webhookSource;
   Object webhookPayload;
   Intent intent;
-  double intentDetectionConfidence;
+  dynamic intentDetectionConfidence;
   DiagnosticInfo diagnosticInfo;
   String languageCode;
   Object sentimentAnalysisResult;

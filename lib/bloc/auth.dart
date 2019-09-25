@@ -1,9 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:starter/bloc/api.dart';
-import 'package:starter/core/bussiness/auth.dart';
 import 'package:starter/core/storage.dart';
-import 'package:starter/model/api_error.dart';
 import 'package:starter/utils/crypto.dart';
 
 class AuthBloc with ChangeNotifier {
@@ -44,7 +42,7 @@ class AuthBloc with ChangeNotifier {
 
   Future<String> login() async {
     Response<Map<String, dynamic>> rep;
-    rep = await AuthRepository.login(_phone, _password);
+    rep = await api.getTripAPI().authRepository.login(_phone, _password);
 
     String token = rep.data["data"]["token"];
     Storage().set(Storage.KEY_TOKEN, token);

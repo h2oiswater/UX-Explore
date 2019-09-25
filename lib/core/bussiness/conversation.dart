@@ -7,10 +7,8 @@ import 'package:starter/core/api/df_api.dart';
 
 import 'interfaces/IConversationRepository.dart';
 
-class ConversationRepository extends IConversationRepository{
+class ConversationRepository extends IConversationRepository {
   ConversationRepository(DFAPI dfAPI) : super(dfAPI);
-
-
 
   Future<Response<Map<String, dynamic>>> intentDetect(String text,
       {String sessionPath}) {

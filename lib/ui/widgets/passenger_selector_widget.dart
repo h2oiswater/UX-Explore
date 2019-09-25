@@ -64,6 +64,7 @@ class PassengerSelectorWidgetState extends State<PassengerSelectorWidget> {
                     if (selected.length != widget.count) {
                       Scaffold.of(context)
                           .showSnackBar(SnackBar(content: Text('选择人数与出行人数不符')));
+                      return;
                     }
                     List<Passenger> result = [];
                     for (int p = 0; p < widget.passengers.length; p++) {

@@ -3,12 +3,13 @@ import 'package:starter/core/api/df_api.dart';
 import 'package:starter/core/api/trip_api.dart';
 
 class APIProvider {
-  final BuildContext context;
-
   DFAPI dfAPI;
-  TripAPI tripAPI;
-  APIProvider({this.context}){
+  TripAPI _tripAPI;
+
+  getTripAPI({BuildContext context}) => _tripAPI.context = context ;
+
+  APIProvider(){
     dfAPI = DFAPI();
-    tripAPI = TripAPI();
+    _tripAPI = TripAPI();
   }
 }

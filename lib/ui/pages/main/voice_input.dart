@@ -39,25 +39,6 @@ class VoiceInputWidget extends StatelessWidget {
                   ),
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.all(8),
-              ),
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                    color: Colors.purple,
-                    borderRadius: BorderRadius.all(Radius.circular(24))),
-                child: InkWell(
-                  onTap: () => value.startPlayer(),
-                  child: Center(
-                    child: Icon(
-                      Icons.play_arrow,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              )
             ],
           ),
         ],

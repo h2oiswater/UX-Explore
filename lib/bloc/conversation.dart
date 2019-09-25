@@ -32,7 +32,7 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
 
   bool get isRecording => _flutterSound.isRecording;
 
-  String currentText = '';
+  String currentText = '按住说话';
 
   UserInfoBloc userInfoBloc;
 
@@ -60,7 +60,7 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
   }
 
   void _recordCompleted() {
-    currentText = '';
+    currentText = '按住说话';
     notifyListeners();
   }
 
@@ -183,8 +183,8 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
   void getLatestText() async {
     final file = File.fromUri(Uri.parse(_currentRecordingFilePath));
     print('getLatestText');
-    final rep = await api.dfAPI.conversationRepository
-        .convertAudio2Text(file.path);
+    final rep =
+        await api.dfAPI.conversationRepository.convertAudio2Text(file.path);
     _addMsg(Msg(
         content: rep.data['data'],
         direction: MsgDirection.OUT,
@@ -211,7 +211,8 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
     DetectIntent detectIntent =
         DetectIntent.fromJsonMap(rep.data['fullResponse']);
 
-    if (detectIntent.allRequiredParamsPresent) {
+    if (detectIntent.intent.name == 'book-mpv-ticket' &&
+        detectIntent.allRequiredParamsPresent) {
       // 搜集了所有的信息了
       _showPassengerSelector(detectIntent.parameters.fields.count.numberValue);
     } else {
