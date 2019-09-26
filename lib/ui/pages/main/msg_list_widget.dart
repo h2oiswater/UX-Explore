@@ -4,14 +4,19 @@ import 'package:starter/bloc/conversation.dart';
 import 'package:starter/model/msg.dart';
 
 class MsgListWidget extends StatelessWidget {
+
+  final ScrollController _scrollController = new ScrollController();
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ConversationBloc>(builder: (context, logic, _) {
+      logic.scrollController = _scrollController;
       return ListView.builder(
         itemBuilder: (_, index) => MsgContent(
           msg: logic.conversationList[index],
         ),
         itemCount: logic.conversationList.length,
+        controller: _scrollController,
       );
     });
   }

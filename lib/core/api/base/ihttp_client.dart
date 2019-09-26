@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart';
 import 'package:starter/core/api/base/option.dart';
-import 'package:starter/core/api/config.dart';
+import 'package:starter/utils/file_manager.dart';
 
 abstract class IHttpClient {
-  Future<Response<dynamic>> request(RequestOption option);
+  Future<dynamic> request(RequestOption option);
 }
 
 class HttpClient extends IHttpClient {
@@ -71,8 +71,8 @@ class HttpClient extends IHttpClient {
   BaseOptions options;
   CancelToken cancelToken = CancelToken();
 
-  Future<Response<Map<String, dynamic>>> upload(
-      String url, List<File> files) async {
+  Future<Response<Map<String, dynamic>>> upload(String url,
+      List<File> files) async {
     Map<String, dynamic> maps = {};
     files.forEach((f) {
       maps[basename(f.path)] = UploadFileInfo(f, basename(f.path));
@@ -80,25 +80,39 @@ class HttpClient extends IHttpClient {
     FormData formData = new FormData.from(maps);
 
     Response<Map<String, dynamic>> response =
-        await dio.post(url, data: formData);
+    await dio.post(url, data: formData);
     return response;
   }
 
-  Future<Response<Map<String, dynamic>>> get(
-      String url, Map<String, dynamic> params) async {
+  Future<Response<Map<String, dynamic>>> get(String url,
+      Map<String, dynamic> params) async {
     Response<Map<String, dynamic>> response =
-        await dio.get(url, queryParameters: params);
+    await dio.get(url, queryParameters: params);
     return response;
+  }
+
+  Future<dynamic> download(url, {String downloadPath}) async {
+    var savePath;
+    if (downloadPath != null && downloadPath.isNotEmpty) {
+      savePath = downloadPath;
+    } else {
+      savePath = await FileManager.getText2AudioPath();
+    }
+
+    await dio.download(url, savePath);
+    return savePath;
   }
 
   @override
-  Future<Response<dynamic>> request(RequestOption option) {
+  Future<dynamic> request(RequestOption option) {
     if (option.method == HttpMethod.GET) {
       return get(option.url, option.queryParams);
     } else if (option.method == HttpMethod.POST) {
       if (option.fileParams.isNotEmpty) {
         return upload(option.url, option.fileParams);
       }
+    } else if (option.method == HttpMethod.DOWNLOAD) {
+        return download(option.getQueryUrl());
     }
     return null;
   }

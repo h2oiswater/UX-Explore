@@ -1,6 +1,6 @@
 import 'dart:io';
 
-enum HttpMethod { GET, POST, PUT, PATCH, DELETE }
+enum HttpMethod { GET, POST, PUT, PATCH, DELETE, DOWNLOAD }
 
 class RequestOption {
   String url;
@@ -24,5 +24,23 @@ class RequestOption {
     if (fileParams == null) {
       fileParams = [];
     }
+  }
+
+  getQueryUrl() {
+    if (queryParams == null || queryParams.isEmpty) {
+      return url;
+    }
+
+    var result = url;
+    result = result + "?";
+    queryParams.forEach((key, value) {
+      if (result.endsWith("?")) {
+        result = result + key + "=" + value;
+      } else {
+        result = result + "&" + key + "=" + value;
+      }
+    });
+
+    return result;
   }
 }

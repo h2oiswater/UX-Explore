@@ -1,7 +1,7 @@
 abstract class IConversationBloc {
   void startRecord();
   void stopRecord();
-  void startPlayer();
+  void startPlayer(String path);
   void stopPlayer();
 
   void getLatestText();

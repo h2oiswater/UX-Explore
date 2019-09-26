@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -14,14 +15,14 @@ import 'package:starter/model/passenger.dart';
 class ConversationBloc with ChangeNotifier implements IConversationBloc {
   static const String NAME = "ConversationBloc";
 
+  //
+  AudioPlayer _audioPlayer = AudioPlayer();
+
   // Recorder and Player
   final FlutterSound _flutterSound = new FlutterSound();
 
   // Recorder status listener
   StreamSubscription _recorderSubscription;
-
-  // Player status listener
-  StreamSubscription _playerSubscription;
 
   // Latest record file store path.
   String _currentRecordingFilePath;
@@ -34,6 +35,8 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
 
   APIProvider api;
 
+  ScrollController scrollController;
+
   bool get isRecording => _flutterSound.isRecording;
 
   String currentText = '按住说话';
@@ -42,13 +45,13 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
 
   List<Msg> conversationList = [
     Msg(
-        content: '你好:)\n我是您的购票小助手，您可以对我说："我想买一张明天下午三点从昆明出发去大理的票。"\n即可完成购票。',
+        content: '你好:)\n我是您的购票小助手小芮，您可以对我说："我想买一张明天下午三点从昆明出发去大理的票。"\n即可完成购票。',
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         direction: MsgDirection.IN),
     Msg(
         content: '👋',
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        direction: MsgDirection.OUT),
+        direction: MsgDirection.OUT)
   ];
 
   @override
@@ -56,11 +59,6 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
     _flutterSound.stopPlayer();
     _flutterSound.stopRecorder();
     super.dispose();
-  }
-
-  void _playSoundCompleted() {
-    currentText = '';
-    notifyListeners();
   }
 
   void _recordCompleted() {
@@ -71,6 +69,8 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
   @override
   void startRecord() async {
     print("startRecord");
+
+    stopPlayer();
 
     PermissionStatus permission = await PermissionHandler()
         .checkPermissionStatus(PermissionGroup.microphone);
@@ -136,51 +136,21 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
   }
 
   @override
-  void startPlayer() async {
+  void startPlayer(String path) async {
     print("startPlayer");
 
-    if (_flutterSound.isPlaying) return;
+    int result = await _audioPlayer.play(path, isLocal: true);
 
-    _currentRecordingFilePath = await _flutterSound.startPlayer(null);
-
-    print('startPlayer: $_currentRecordingFilePath');
-
-    _playerSubscription = _flutterSound.onPlayerStateChanged.listen((e) {
-      if (e != null) {
-        if (e.currentPosition == e.duration) {
-          _playSoundCompleted();
-        }
-      }
-    });
-    currentText = '正在播放';
-    notifyListeners();
+    print(result);
   }
 
   @override
   void stopPlayer() async {
     print("stopPlayer");
 
-    if (!_flutterSound.isPlaying) {
-      _playSoundCompleted();
-      return;
-    }
+    int result = await _audioPlayer.stop();
 
-    String value;
-    try {
-      value = await _flutterSound.stopPlayer();
-    } catch (e) {
-      print('--- stopPlayer error ---');
-      print(e.toString());
-      print('--- stopPlayer end ---');
-    }
-
-    print('stopRecorder: $value');
-
-    if (_playerSubscription != null) {
-      _playerSubscription.cancel();
-      _playerSubscription = null;
-    }
-    _recordCompleted();
+    print(result);
   }
 
   @override
@@ -212,31 +182,51 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
 
     _sessionPath = rep.data['sessionPath'];
 
-    _detectIntent =
-        DetectIntent.fromJsonMap(rep.data['fullResponse']);
+    _detectIntent = DetectIntent.fromJsonMap(rep.data['fullResponse']);
 
+    var speakMessage;
     if (rep.data['fulfillmentText'] == '好的，正在为您出票') {
+      speakMessage = '好的，在您选择了乘车人后，将为您出票。';
       _addMsg(Msg(
-          content: '好的，在您选择了乘车人后，将为您出票。',
+          content: speakMessage,
           direction: MsgDirection.IN,
           id: DateTime.now().millisecondsSinceEpoch.toString()));
       // 搜集了所有的信息了
       _showPassengerSelector(_detectIntent.parameters.fields.count.numberValue);
     } else {
+      speakMessage = rep.data['fulfillmentText'];
       _addMsg(Msg(
-          content: rep.data['fulfillmentText'],
+          content: speakMessage,
           direction: MsgDirection.IN,
           id: DateTime.now().millisecondsSinceEpoch.toString()));
+    }
+
+    try {
+      var localPath =
+          await api.dfAPI.conversationRepository.text2audio(speakMessage);
+      startPlayer(localPath);
+    } catch (e) {
+      print(e);
     }
   }
 
   void _addMsg(Msg msg) {
     conversationList.add(msg);
+
     notifyListeners();
+
+    if (scrollController != null) {
+      scrollController.animateTo(
+        scrollController.position.maxScrollExtent + 100.0,
+        curve: Curves.easeOut,
+        duration: const Duration(milliseconds: 300),
+      );
+    }
   }
 
   void _showPassengerSelector(count) async {
-    List<Passenger> selectedPassengers = await userInfoBloc.showPassengerSelector(count);
+    List<Passenger> selectedPassengers =
+        await userInfoBloc.showPassengerSelector(count);
     var params = {
       "passengers": selectedPassengers.map((p) => p.id).toList(),
       "origin": _detectIntent.parameters.fields.origin.stringValue,

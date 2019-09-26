@@ -28,4 +28,12 @@ class ConversationRepository extends IConversationRepository {
         method: HttpMethod.POST,
         fileParams: [File(filePath)]));
   }
+
+  @override
+  Future<dynamic> text2audio(String text) {
+    return dfAPI.request(RequestOption(
+        url: '/converter/text2audio',
+        method: HttpMethod.DOWNLOAD,
+        queryParams: {"text": text}));
+  }
 }

@@ -10,4 +10,6 @@ abstract class IConversationRepository {
 
   Future<Response<Map<String, dynamic>>> intentDetect(String text,
       {String sessionPath});
+
+  Future<dynamic> text2audio(String text);
 }
