@@ -6,9 +6,12 @@ class APIProvider {
   DFAPI dfAPI;
   TripAPI _tripAPI;
 
-  getTripAPI({BuildContext context}) => _tripAPI.context = context ;
+  getTripAPI({BuildContext context}) {
+    _tripAPI.context = context;
+    return _tripAPI;
+  }
 
-  APIProvider(){
+  APIProvider() {
     dfAPI = DFAPI();
     _tripAPI = TripAPI();
   }

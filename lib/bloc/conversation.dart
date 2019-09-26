@@ -9,6 +9,7 @@ import 'package:starter/bloc/interfaces/conversation.dart';
 import 'package:starter/bloc/user_info.dart';
 import 'package:starter/model/df/detect_intent_response/detect_intent.dart';
 import 'package:starter/model/msg.dart';
+import 'package:starter/model/passenger.dart';
 
 class ConversationBloc with ChangeNotifier implements IConversationBloc {
   static const String NAME = "ConversationBloc";
@@ -27,6 +28,9 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
 
   // Dialog SessionPath
   String _sessionPath;
+
+  // current intent info
+  DetectIntent _detectIntent;
 
   APIProvider api;
 
@@ -125,8 +129,8 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
       _recorderSubscription.cancel();
       _recorderSubscription = null;
     }
-    currentText = 'Hello';
-    notifyListeners();
+
+    _recordCompleted();
 
     getLatestText();
   }
@@ -208,13 +212,16 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
 
     _sessionPath = rep.data['sessionPath'];
 
-    DetectIntent detectIntent =
+    _detectIntent =
         DetectIntent.fromJsonMap(rep.data['fullResponse']);
 
-    if (detectIntent.intent.name == 'book-mpv-ticket' &&
-        detectIntent.allRequiredParamsPresent) {
+    if (rep.data['fulfillmentText'] == '好的，正在为您出票') {
+      _addMsg(Msg(
+          content: '好的，在您选择了乘车人后，将为您出票。',
+          direction: MsgDirection.IN,
+          id: DateTime.now().millisecondsSinceEpoch.toString()));
       // 搜集了所有的信息了
-      _showPassengerSelector(detectIntent.parameters.fields.count.numberValue);
+      _showPassengerSelector(_detectIntent.parameters.fields.count.numberValue);
     } else {
       _addMsg(Msg(
           content: rep.data['fulfillmentText'],
@@ -228,7 +235,15 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
     notifyListeners();
   }
 
-  void _showPassengerSelector(count) {
-    userInfoBloc.showPassengerSelector(count);
+  void _showPassengerSelector(count) async {
+    List<Passenger> selectedPassengers = await userInfoBloc.showPassengerSelector(count);
+    var params = {
+      "passengers": selectedPassengers.map((p) => p.id).toList(),
+      "origin": _detectIntent.parameters.fields.origin.stringValue,
+      "destination": _detectIntent.parameters.fields.destination.stringValue,
+      "date": _detectIntent.parameters.fields.date.stringValue,
+      "time": _detectIntent.parameters.fields.time.stringValue,
+    };
+    print(params.toString());
   }
 }

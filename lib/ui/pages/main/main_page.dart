@@ -13,7 +13,7 @@ class MainPage extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProxyProvider<APIProvider, UserInfoBloc>(
-          builder: (context, api, previous) => (previous ?? UserInfoBloc())
+          builder: (context, api, previous) => (previous ?? UserInfoBloc(context: context))
             ..api = api
             ..context = context,
         ),

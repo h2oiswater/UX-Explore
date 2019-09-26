@@ -26,9 +26,22 @@ class PassengerSelectorWidgetState extends State<PassengerSelectorWidget> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        Text(
-          '请选择${widget.count.toString()}位出行乘客',
-          style: Theme.of(context).textTheme.title,
+        Container(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Center(
+            child: Column(
+              children: <Widget>[
+                Text(
+                  '请选择${widget.count.toString()}位出行乘客',
+                  style: Theme.of(context).textTheme.title,
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 4),
+                ),
+                Text('点击确定后将为您生成订单')
+              ],
+            ),
+          ),
         ),
         Expanded(
           child: ListView.builder(
@@ -39,13 +52,37 @@ class PassengerSelectorWidgetState extends State<PassengerSelectorWidget> {
                 });
               },
               child: Container(
-                  child: Column(
-                    children: <Widget>[
-                      Text(widget.passengers[index].name),
-                      Text(widget.passengers[index].idCard)
-                    ],
-                  ),
-                  color: selectedIndex[index] > 0 ? Colors.blue : Colors.white),
+                padding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            widget.passengers[index].name,
+                            style: Theme.of(context).textTheme.title,
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(vertical: 4),
+                          ),
+                          Text(widget.passengers[index].idCard,
+                              style: Theme.of(context).textTheme.caption)
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      selectedIndex[index] == 1
+                          ? Icons.check_circle
+                          : Icons.check_circle_outline,
+                      color: selectedIndex[index] == 1
+                          ? Colors.purple
+                          : Colors.grey,
+                      size: 32,
+                    )
+                  ],
+                ),
+              ),
             ),
             itemCount: widget.passengers.length,
           ),
@@ -58,6 +95,7 @@ class PassengerSelectorWidgetState extends State<PassengerSelectorWidget> {
                     child: Text('取消'))),
             Expanded(
               child: RaisedButton(
+                  color: Colors.purple,
                   onPressed: () {
                     var selected =
                         selectedIndex.where((value) => value > 0).toList();
@@ -75,7 +113,10 @@ class PassengerSelectorWidgetState extends State<PassengerSelectorWidget> {
 
                     Navigator.of(context).pop(result);
                   },
-                  child: Text('确定')),
+                  child: Text(
+                    '确定',
+                    style: TextStyle(color: Colors.white),
+                  )),
             )
           ],
         )

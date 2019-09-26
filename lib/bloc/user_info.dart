@@ -12,7 +12,7 @@ class UserInfoBloc with ChangeNotifier {
 
   APIProvider api;
 
-  UserInfoBloc() {
+  UserInfoBloc({this.context}) {
 //    UserInfoRepository.getPassengers().then((result) {
 //      List list = result.data["data"];
 //      passengers = list.map((f) => Passenger.fromJsonMap(f)).toList();
@@ -21,7 +21,7 @@ class UserInfoBloc with ChangeNotifier {
 
   Future<List<Passenger>> showPassengerSelector(int count) async {
     print('showPassengerSelector');
-    var rep = await api.getTripAPI().userInfoRepository.getPassengers();
+    var rep = await api.getTripAPI(context: context).userInfoRepository.getPassengers();
     List list = rep.data["data"];
     passengers = list.map((f) => Passenger.fromJsonMap(f)).toList();
 

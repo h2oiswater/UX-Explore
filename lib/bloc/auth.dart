@@ -45,6 +45,7 @@ class AuthBloc with ChangeNotifier {
     rep = await api.getTripAPI().authRepository.login(_phone, _password);
 
     String token = rep.data["data"]["token"];
+    print('login success $token');
     Storage().set(Storage.KEY_TOKEN, token);
     return null;
   }
