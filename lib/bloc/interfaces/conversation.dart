@@ -5,6 +5,8 @@ abstract class IConversationBloc {
   void stopPlayer();
 
   void getLatestText();
+  void fetchBatchInfo();
+  void createOrder();
 }
 
 abstract class IConversationView {

@@ -4,7 +4,9 @@ import 'package:flutter/widgets.dart';
 import 'package:starter/core/api/base/ihttp_client.dart';
 import 'package:starter/core/api/base/option.dart';
 import 'package:starter/core/bussiness/auth.dart';
+import 'package:starter/core/bussiness/conversation.dart';
 import 'package:starter/core/bussiness/interfaces/IAuthRepository.dart';
+import 'package:starter/core/bussiness/interfaces/IConversationRepository.dart';
 import 'package:starter/core/bussiness/interfaces/IUserInfoRepository.dart';
 import 'package:starter/core/bussiness/user_info.dart';
 import 'package:starter/core/storage.dart';
@@ -34,6 +36,8 @@ class TripAPI {
     print('token = $token');
 
     option.queryParams['token'] = token;
+
+    print('after party');
 
     var response = await _client.request(option);
 

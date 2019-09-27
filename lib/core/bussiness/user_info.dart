@@ -12,4 +12,28 @@ class UserInfoRepository extends IUserInfoRepository {
       method: HttpMethod.GET,
     ));
   }
+
+  @override
+  Future<Response<dynamic>> fetchBatchInfo(Map<String, dynamic> params) {
+    return tripAPI.request(RequestOption(
+        url: '/user/busline/info/piece/batch/nlp',
+        method: HttpMethod.POST,
+        bodyParams: params));
+  }
+
+  @override
+  Future<Response> createOrder(Map<String, dynamic> params) {
+    return tripAPI.request(RequestOption(
+        url: '/user/busline/order/create/piece',
+        method: HttpMethod.POST,
+        bodyParams: params));
+  }
+
+  @override
+  Future<Response> fetchSeats(String busLineBatchId) {
+    return tripAPI.request(RequestOption(
+        url: '/user/busline/list/piece/seats',
+        method: HttpMethod.POST,
+        bodyParams: {"bus_line_batch_id": busLineBatchId}));
+  }
 }

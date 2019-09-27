@@ -36,4 +36,5 @@ class ConversationRepository extends IConversationRepository {
         method: HttpMethod.DOWNLOAD,
         queryParams: {"text": text}));
   }
+
 }

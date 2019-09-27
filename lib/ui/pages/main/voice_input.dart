@@ -28,9 +28,9 @@ class VoiceInputWidget extends StatelessWidget {
                     color: Colors.purple,
                     borderRadius: BorderRadius.all(Radius.circular(24))),
                 child: InkWell(
-                  onTapDown: (_) => value.startRecord(),
-                  onTapCancel: () => value.stopRecord(),
-                  onTap: () => value.stopRecord(),
+//                  onTapDown: (_) => value.startRecord(),
+//                  onTapCancel: () => value.stopRecord(),
+                  onTap: () => value.fetchBatchInfo(),
                   child: Center(
                     child: Icon(
                       value.isRecording ? Icons.fiber_manual_record : Icons.mic,

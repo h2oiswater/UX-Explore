@@ -7,7 +7,7 @@ class RequestOption {
   final HttpMethod method;
   Map<String, String> headers;
   Map<String, dynamic> queryParams;
-  Map<String, String> bodyParams;
+  Map<String, dynamic> bodyParams;
   List<File> fileParams;
 
   RequestOption(

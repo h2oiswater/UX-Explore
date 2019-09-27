@@ -6,4 +6,10 @@ abstract class IUserInfoRepository {
   IUserInfoRepository(this.tripAPI);
 
   Future<Response<dynamic>>getPassengers();
+
+  Future<Response<dynamic>> fetchBatchInfo(Map<String, dynamic> params);
+
+  Future<Response<dynamic>> createOrder(Map<String, dynamic> params);
+
+  Future<Response<dynamic>> fetchSeats(String busLineBatchId);
 }
