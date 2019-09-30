@@ -91,7 +91,7 @@ class PassengerSelectorWidgetState extends State<PassengerSelectorWidget> {
           children: <Widget>[
             Expanded(
                 child: FlatButton(
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () => Navigator.of(context).pop([]),
                     child: Text('取消'))),
             Expanded(
               child: RaisedButton(

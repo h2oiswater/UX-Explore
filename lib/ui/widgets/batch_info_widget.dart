@@ -33,13 +33,13 @@ class BatchInfoWidget extends StatelessWidget {
             children: <Widget>[
               Expanded(
                   child: FlatButton(
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: () => Navigator.of(context).pop(false),
                       child: Text('取消'))),
               Expanded(
                 child: RaisedButton(
                     color: Colors.purple,
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      Navigator.of(context).pop(true);
                     },
                     child: Text(
                       '确定',
@@ -59,6 +59,7 @@ class BatchInfoWidget extends StatelessWidget {
 
   _getDate() {
     return batch.data.ticket.first.date +
+        ' ' +
         batch.data.ticket.first.arr_ticket.first.time;
   }
 }

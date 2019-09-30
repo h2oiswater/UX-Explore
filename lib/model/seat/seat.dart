@@ -1,8 +1,8 @@
 class Seat {
   String bus_line_batch_id;
   int seat_num;
-  int seat_price_original;
-  int seat_price_discount;
+  double seat_price_original;
+  double seat_price_discount;
   String status;
   Object order_bus_id;
   String create_date;

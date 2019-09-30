@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:starter/bloc/api.dart';
 import 'package:starter/bloc/interfaces/conversation.dart';
 import 'package:starter/bloc/user_info.dart';
+import 'package:starter/model/api_error.dart';
 import 'package:starter/model/batch/batch.dart';
 import 'package:starter/model/batch/data.dart';
 import 'package:starter/model/df/detect_intent_response/detect_intent.dart';
@@ -61,10 +62,6 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
         content: '你好:)\n我是您的购票小助手小芮，您可以对我说："我想买一张明天下午三点从昆明出发去大理的票。"\n即可完成购票。',
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         direction: MsgDirection.IN),
-    Msg(
-        content: '👋',
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        direction: MsgDirection.OUT)
   ];
 
   ConversationBloc({this.context});
@@ -215,10 +212,11 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
           direction: MsgDirection.IN,
           id: DateTime.now().millisecondsSinceEpoch.toString()));
     }
+  }
 
+  _speak(String msg) async {
     try {
-      var localPath =
-          await api.dfAPI.conversationRepository.text2audio(speakMessage);
+      var localPath = await api.dfAPI.conversationRepository.text2audio(msg);
       startPlayer(localPath);
     } catch (e) {
       print(e);
@@ -228,11 +226,15 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
   void _addMsg(Msg msg) {
     conversationList.add(msg);
 
+    if (msg.direction == MsgDirection.IN) {
+      _speak(msg.content);
+    }
+
     notifyListeners();
 
     if (scrollController != null) {
       scrollController.animateTo(
-        scrollController.position.maxScrollExtent + 100.0,
+        scrollController.position.maxScrollExtent,
         curve: Curves.easeOut,
         duration: const Duration(milliseconds: 300),
       );
@@ -240,14 +242,20 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
   }
 
   void _showPassengerSelector(count) async {
-    _selectedPassenger =
-        await userInfoBloc.showPassengerSelector(count);
+    _selectedPassenger = await userInfoBloc.showPassengerSelector(count);
+
+    if (_selectedPassenger.length == count) {
+      fetchBatchInfo();
+    }
+
     var params = {
       "passengers": _selectedPassenger.map((p) => p.id).toList(),
       "origin": _detectIntent.parameters.fields.origin.stringValue,
       "destination": _detectIntent.parameters.fields.destination.stringValue,
-      "date": _detectIntent.parameters.fields.date.stringValue,
-      "time": _detectIntent.parameters.fields.time.stringValue,
+      "date": _hardcoreConvertDate(
+          _detectIntent.parameters.fields.date.stringValue),
+      "time": _hardcoreConvertDate(
+          _detectIntent.parameters.fields.time.stringValue),
     };
     print(params.toString());
   }
@@ -256,38 +264,60 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
   void fetchBatchInfo() async {
     // {passengers: [240], origin: 昆明市, destination: 大理市, date: 2019-09-27T12:00:00+08:00, time: 2019-09-26T15:00:00+08:00}
 
+//    Map<String, dynamic> params = {
+//      "passengers": [240],
+//      "origin": "隆阳区",
+//      "destination": "大理市主城区",
+//      "date": "2019-09-30 12:00:00",
+//      "time": "2019-09-26 15:00:00",
+//    };
     Map<String, dynamic> params = {
-      "passengers": [240],
-      "origin": "隆阳区",
-      "destination": "大理市主城区",
-      "date": "2019-09-30 12:00:00",
-      "time": "2019-09-26 15:00:00",
+      "passengers": _selectedPassenger.map((p) => p.id).toList(),
+      "origin": _detectIntent.parameters.fields.origin.stringValue,
+      "destination": _detectIntent.parameters.fields.destination.stringValue,
+      "date": _hardcoreConvertDate(
+          _detectIntent.parameters.fields.date.stringValue),
+      "time": _hardcoreConvertDate(
+          _detectIntent.parameters.fields.time.stringValue),
     };
 
-    Response<Map<String, dynamic>> batch = await api
-        .getTripAPI(context: context)
-        .userInfoRepository
-        .fetchBatchInfo(params);
+    Response<Map<String, dynamic>> batch;
+    try {
+      batch = await api
+          .getTripAPI(context: context)
+          .userInfoRepository
+          .fetchBatchInfo(params);
+    } catch (e) {
+      if (e is APIError) {
+        _addMsg(Msg(content: e.message, direction: MsgDirection.IN));
+      }
+      return;
+    }
 
     _batch = Batch.fromJsonMap(batch.data);
 
-    userInfoBloc.showBatchInfoConfirm(_batch);
+    bool confirm = await userInfoBloc.showBatchInfoConfirm(_batch);
+
+    if (confirm) {
+      createOrder();
+    } else {
+      _addMsg(Msg(direction: MsgDirection.OUT, content: '取消'));
+      _addMsg(Msg(direction: MsgDirection.IN, content: '已取消'));
+    }
   }
 
   @override
   void createOrder() async {
     Data batch = _batch.data;
 
-    String startDate =
-        _hardcoreConvertDate(_detectIntent.parameters.fields.date.stringValue);
-    String startTime =
-        _hardcoreConvertDate(_detectIntent.parameters.fields.time.stringValue);
-
     int passengerCount = _selectedPassenger.length;
 
     await _fetchSeat();
 
     var seats = _seatRep.data.where((seat) => seat.status == "0");
+
+    // 给用户从前排安排
+    var recSeats = seats.skip(seats.length - passengerCount);
 
     Map<String, dynamic> params = {
       "bus_line_id": batch.line.id,
@@ -297,24 +327,38 @@ class ConversationBloc with ChangeNotifier implements IConversationBloc {
       "end_place": batch.down.first.place,
       "end_lng": batch.down.first.lng,
       "end_lat": batch.down.first.lat,
-      "start_time":
-          startDate.split(" ").first + " " + startTime.split(" ").last,
+      "start_time": batch.ticket.first.date +
+          " " +
+          batch.ticket.first.arr_ticket.first.time +
+          ":00",
       "is_need_ticket": 1,
       "passengers": _selectedPassenger.map((p) => p.id).toList().join(","),
-      "seat_nums": "2019-09-26 15:00:00",
-      "bus_line_batch_id": "2019-09-26 15:00:00",
-      "premium": "2019-09-26 15:00:00",
-      "is_use_point": "2019-09-26 15:00:00",
-      "start_point_id": "2019-09-26 15:00:00",
-      "end_point_id": "2019-09-26 15:00:00",
+      "seat_nums": recSeats.map((s) => s.seat_num).join(","),
+      "bus_line_batch_id":
+          batch.ticket.first.arr_ticket.first.bus_line_batch_id,
+      "premium": 0,
+      "is_use_point": true,
+      "start_point_id": batch.up.first.id,
+      "end_point_id": batch.down.first.id,
     };
+
+    var rep = await api
+        .getTripAPI(context: context)
+        .userInfoRepository
+        .createOrder(params);
+    if (rep.data["code"] == 0) {
+      _addMsg(Msg(direction: MsgDirection.OUT, content: '下单成功，可以去小程序或者APP付款啦'));
+    } else {
+      _addMsg(Msg(direction: MsgDirection.OUT, content: rep.data["msg"]));
+    }
   }
 
   _fetchSeat() async {
     Response<Map<String, dynamic>> rep = await api
         .getTripAPI(context: context)
         .userInfoRepository
-        .fetchSeats(_batch.data.ticket.first.arr_ticket.first.bus_line_batch_id);
+        .fetchSeats(
+            _batch.data.ticket.first.arr_ticket.first.bus_line_batch_id);
     _seatRep = SeatRep.fromJsonMap(rep.data);
   }
 

@@ -91,10 +91,9 @@ class HttpClient extends IHttpClient {
     return response;
   }
 
-  Future<Response<Map<String, dynamic>>> post(String url,
-      Map<String, dynamic> params) async {
+  Future<Response<Map<String, dynamic>>> post(RequestOption option) async {
     Response<Map<String, dynamic>> response =
-    await dio.post(url, data: params);
+    await dio.post(option.url, data: option.bodyParams, queryParameters: option.queryParams);
     return response;
   }
 
@@ -118,7 +117,7 @@ class HttpClient extends IHttpClient {
       if (option.fileParams.isNotEmpty) {
         return upload(option.url, option.fileParams);
       }
-      return post(option.url, option.bodyParams);
+      return post(option);
     } else if (option.method == HttpMethod.DOWNLOAD) {
         return download(option.getQueryUrl());
     }
